@@ -1,434 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Command Center</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            color: #000;
-        }
-        #traffic-container {
-            max-width: 1350px;   
-            margin: auto;
-            background: #ffffff;
-            border: 1px solid #eeeeee;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
+<div style="padding:20px 40px 50px;">
+    <h3 style="background:#000; color:#fff; padding:10px;">Link Wheel & Research Hub</h3>
+    <div id="stats-summary" style="text-align:right; font-weight:bold; margin-bottom:20px; font-size:15px;"></div>
 
-        /* --- NEW: CALENDAR STYLES --- */
-        #calendar-section {
-            background: #fff;
-            padding: 20px;
-            border-bottom: 2px solid #eee;
-            text-align: center;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            max-width: 600px;
-            margin: 20px auto 0;
-        }
-        .cal-day-label { font-weight: bold; font-size: 12px; color: #777; text-transform: uppercase; }
-        .cal-day {
-            padding: 15px 5px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-weight: bold;
-            position: relative;
-            min-height: 40px;
-        }
-        .cal-today { border: 2px solid #007bff; background: #e7f3ff; }
-        .cal-complete { background: #28a745 !important; color: #fff; border-color: #1e7e34; }
-        .cal-complete::after { content: "✓"; display: block; font-size: 12px; }
-
-        /* --- PREVIEW MODAL --- */
-        #preview-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            width: 90%;
-            height: 90%;
-            background: white;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .modal-header {
-            padding: 15px;
-            background: #333;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #preview-frame { flex-grow: 1; border: none; width: 100%; height: 100%; }
-
-        h3 {
-            font-size: 18px;
-            background: #ffff00;
-            color: #ff0000;
-            padding: 14px 20px;
-            margin: 0 0 25px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 900;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-        }
-        .task-item {
-            display: flex;
-            align-items: center;
-            background: #fdfdfd;
-            padding: 16px;
-            border: 1px solid #eeeeee;
-            border-radius: 8px;
-            gap: 16px;
-        }
-        .traffic-check { transform: scale(1.8); }
-        
-        .btn-row { display: flex; gap: 8px; margin-top: 10px; }
-        .link-btn {
-            flex: 2;
-            background: #0056b3;
-            color: #fff;
-            padding: 12px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .preview-btn {
-            flex: 1;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .progress-container {
-            background: #e0e0e0;
-            border-radius: 25px;
-            height: 45px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #ccc;
-            margin-bottom: 30px;
-        }
-        #daily-progress-fill {
-            height: 100%;
-            background: #007bff;
-            transition: width 0.5s ease;
-        }
-        #progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: bold;
-            font-size: 16px;
-            width: 100%;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-<!-- NEW: Preview Modal -->
-<div id="preview-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <span id="preview-title">Link Preview</span>
-            <button onclick="closePreview()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">CLOSE [X]</button>
+    <div style="background:#f9f9f9; padding:25px; border-radius:10px; border:2px dashed #ccc; margin-bottom:30px;">
+        <div style="display:grid; grid-template-columns:2fr 2fr 1fr; gap:12px; margin-bottom:12px;">
+            <input type="text" id="newLinkName" placeholder="Site Name" style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
+            <input type="text" id="newLinkUrl" placeholder="https:// , PLUS; leave blank for NOTE ONLY!" style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
+            <select id="newLinkStatus" style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
+                <option value="Active">Active</option>
+                <option value="Testing">Testing</option>
+                <option value="Paused">Paused</option>
+            </select>
         </div>
-        <iframe id="preview-frame" src=""></iframe>
+        <div style="display:flex; gap:12px;">
+            <input type="text" id="newLinkNote" placeholder="Quick Notes (price, conversion, etc.)" style="flex:1; padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
+            <button onclick="saveNewSource()" style="background:#007bff; color:white; padding:0 40px; border:none; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer;">SAVE SOURCE</button>
+        </div>
     </div>
+
+    <div id="research-links-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;"></div>
 </div>
 
-<div id="traffic-container">
+<hr style="margin:20px 40px; border-top:2px solid #eee;">
 
-    <!-- NEW: Calendar Section -->
-    <div id="calendar-section">
-        <h2 id="calendar-month-year" style="margin:0;">Month Year</h2>
-        <div class="calendar-grid" id="calendar-grid">
-            <!-- Labels -->
-            <div class="cal-day-label">Sun</div><div class="cal-day-label">Mon</div><div class="cal-day-label">Tue</div>
-            <div class="cal-day-label">Wed</div><div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label">Sat</div>
-            <!-- Days injected by JS -->
-        </div>
+<div style="padding:0 40px;">
+    <div class="task-item"><input type="checkbox" id="check4" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">4. TrafficAdBar — Surfing</div><a href="https://trafficadbar.com/main/surf/" target="_blank" class="link-btn">START SURFING</a></div></div>
+    <div class="task-item"><input type="checkbox" id="check5" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">5. Easy Hits 4 U — Credits</div><a href="https://www.easyhits4u.com/account/" target="_blank" class="link-btn">BUY CREDITS</a></div></div>
+    
+    <h3>Paid & Hands-Off</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <div class="task-item"><input type="checkbox" id="check6" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">6. Traffic Zest</div><a href="https://trafficzest.com/login" target="_blank" class="link-btn" style="background:#28a745;">TRAFFIC ZEST</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check7" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">7. Udimi</div><a href="https://udimi.com/login" target="_blank" class="link-btn" style="background:#28a745;">UDIMI LOGIN</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check8" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">8. $10 Solo Ads</div><a href="https://www.10dollarsoloads.com/" target="_blank" class="link-btn" style="background:#28a745;">$10 SOLO ADS</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check9" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">9. Easy Solo Ads</div><a href="https://www.easysoloads.com/" target="_blank" class="link-btn" style="background:#28a745;">EASY SOLO ADS</a></div></div>
     </div>
 
-    <!-- Progress Bar -->
-    <div style="padding: 30px 40px 10px;">
-        <h2 style="margin:0 0 15px 0; font-size:26px; text-align:center;">Daily Traffic Command</h2>
-        <div class="progress-container">
-            <div id="daily-progress-fill" style="width:0%"></div>
-            <div id="progress-text">Daily Goal: 0% (0/15)</div>
-        </div>
+    <h3>Classified Ads</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <div class="task-item"><input type="checkbox" id="check10" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">10. QuickAds.ai</div><a href="https://quickads.ai/" target="_blank" class="link-btn" style="background:#fd7e14;">QUICKADS.AI</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check11" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">11. QwikAd</div><a href="https://qwikad.com/" target="_blank" class="link-btn" style="background:#fd7e14;">QWIKAD POST</a></div></div>
     </div>
 
-    <div style="padding: 0 40px 40px;">
-
-        <!-- Daily Workflow -->
-        <h3>Daily Workflow</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
-            <div class="task-item"><input type="checkbox" id="check1" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">1. MLGS — Lead mailer</div><div class="btn-row"><a href="https://troypringle.github.io/MLGS-Page/" target="_blank" class="link-btn">OPEN MLGS</a><button class="preview-btn" onclick="openPreview('https://troypringle.github.io/MLGS-Page/')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check2" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">2. Herculist — Credit zone</div><div class="btn-row"><a href="http://www.herculist.com/cgi-bin/thezoneadsdisplay.cgi?325hv9d2u65hc2z3w7jo5j&8tmjd4w2k9f6bnh7rew7gkg5" target="_blank" class="link-btn">ZONE</a><button class="preview-btn" onclick="openPreview('http://www.herculist.com/cgi-bin/thezoneadsdisplay.cgi?325hv9d2u65hc2z3w7jo5j&8tmjd4w2k9f6bnh7rew7gkg5')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check3" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">3. Daily-Ads — Swipes</div><div class="btn-row"><a href="https://daily-ads.com/dashboard" target="_blank" class="link-btn">SWIPES</a><button class="preview-btn" onclick="openPreview('https://daily-ads.com/dashboard')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check4" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">4. TrafficAdBar — Surfing</div><div class="btn-row"><a href="https://trafficadbar.com/main/surf/" target="_blank" class="link-btn">SURF</a><button class="preview-btn" onclick="openPreview('https://trafficadbar.com/main/surf/')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check5" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">5. Easy Hits 4 U — Credits</div><div class="btn-row"><a href="https://www.easyhits4u.com/account/" target="_blank" class="link-btn">CREDITS</a><button class="preview-btn" onclick="openPreview('https://www.easyhits4u.com/account/')">PREVIEW</button></div></div></div>
-        </div>
-
-        <!-- Paid & Hands-Off -->
-        <h3>Paid & Hands-Off</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
-            <div class="task-item"><input type="checkbox" id="check6" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">6. Traffic Zest</div><div class="btn-row"><a href="https://trafficzest.com/login" target="_blank" class="link-btn" style="background:#28a745;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://trafficzest.com/login')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check7" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">7. Udimi</div><div class="btn-row"><a href="https://udimi.com/login" target="_blank" class="link-btn" style="background:#28a745;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://udimi.com/login')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check8" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">8. $10 Solo Ads</div><div class="btn-row"><a href="https://www.10dollarsoloads.com/" target="_blank" class="link-btn" style="background:#28a745;">VISIT</a><button class="preview-btn" onclick="openPreview('https://www.10dollarsoloads.com/')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check9" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">9. Easy Solo Ads</div><div class="btn-row"><a href="https://www.easysoloads.com/" target="_blank" class="link-btn" style="background:#28a745;">VISIT</a><button class="preview-btn" onclick="openPreview('https://www.easysoloads.com/')">PREVIEW</button></div></div></div>
-        </div>
-
-        <!-- Classified Ads -->
-        <h3>Classified Ads</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
-            <div class="task-item"><input type="checkbox" id="check10" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">10. QuickAds.ai</div><div class="btn-row"><a href="https://quickads.ai/" target="_blank" class="link-btn" style="background:#fd7e14;">VISIT</a><button class="preview-btn" onclick="openPreview('https://quickads.ai/')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check11" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">11. QwikAd</div><div class="btn-row"><a href="https://qwikad.com/" target="_blank" class="link-btn" style="background:#fd7e14;">POST</a><button class="preview-btn" onclick="openPreview('https://qwikad.com/')">PREVIEW</button></div></div></div>
-        </div>
-
-        <!-- Secondary Mailers -->
-        <h3>Secondary Mailers</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
-            <div class="task-item"><input type="checkbox" id="check12" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">12. Referral Frenzy</div><div class="btn-row"><a href="https://www.referralfrenzy.com/login.php" target="_blank" class="link-btn" style="background:#6f42c1;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://www.referralfrenzy.com/login.php')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check13" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">13. SOTAM</div><div class="btn-row"><a href="https://sotam.net/login" target="_blank" class="link-btn" style="background:#6f42c1;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://sotam.net/login')">PREVIEW</button></div></div></div>
-        </div>
-
-        <!-- Social & Local -->
-        <h3>Social & Local</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
-            <div class="task-item"><input type="checkbox" id="check14" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">14. Craigslist</div><div class="btn-row"><a href="https://accounts.craigslist.org/login" target="_blank" class="link-btn" style="background:#008080;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://accounts.craigslist.org/login')">PREVIEW</button></div></div></div>
-            
-            <div class="task-item"><input type="checkbox" id="check15" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">15. Instagram</div><div class="btn-row"><a href="https://www.instagram.com/" target="_blank" class="link-btn" style="background:#008080;">LOGIN</a><button class="preview-btn" onclick="openPreview('https://www.instagram.com/')">PREVIEW</button></div></div></div>
-        </div>
-
-        <button onclick="resetDailyTasks()" style="width:100%; padding:22px; background:#dc3545; color:#fff; border:none; border-radius:8px; font-weight:bold; font-size:17px; cursor:pointer; margin-top:20px;">
-            Reset All Daily Checkmarks
-        </button>
+    <h3>Secondary Mailers</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <div class="task-item"><input type="checkbox" id="check12" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">12. Referral Frenzy</div><a href="https://www.referralfrenzy.com/login.php" target="_blank" class="link-btn" style="background:#6f42c1;">REFERRAL FRENZY</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check13" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">13. SOTAM</div><a href="https://sotam.net/login" target="_blank" class="link-btn" style="background:#6f42c1;">SOTAM LOGIN</a></div></div>
     </div>
 
-    <hr style="margin:40px 40px; border-top:2px solid #eee;">
-
-    <!-- Link Wheel -->
-    <div style="padding:0 40px 50px;">
-        <h3 style="background:#000; color:#fff;">Link Wheel & Research Hub</h3>
-        <div id="stats-summary" style="text-align:right; font-weight:bold; margin-bottom:20px; font-size:15px;"></div>
-
-        <div style="background:#f9f9f9; padding:25px; border-radius:10px; border:2px dashed #ccc; margin-bottom:30px;">
-            <div style="display:grid; grid-template-columns:2fr 2fr 1fr; gap:12px; margin-bottom:12px;">
-                <input type="text" id="newLinkName" placeholder="Site Name" style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
-                <input type="text" id="newLinkUrl" placeholder="https://..." style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
-                <select id="newLinkStatus" style="padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
-                    <option value="Active">Active</option>
-                    <option value="Testing">Testing</option>
-                    <option value="Paused">Paused</option>
-                </select>
-            </div>
-            <div style="display:flex; gap:12px;">
-                <input type="text" id="newLinkNote" placeholder="Quick Notes..." style="flex:1; padding:15px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
-                <button onclick="saveNewSource()" style="background:#007bff; color:white; padding:0 40px; border:none; border-radius:6px; font-weight:bold; font-size:16px;">SAVE SOURCE</button>
-            </div>
-        </div>
-
-        <div id="research-links-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;"></div>
+    <h3>Social & Local</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <div class="task-item"><input type="checkbox" id="check14" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">14. Craigslist</div><a href="https://accounts.craigslist.org/login" target="_blank" class="link-btn" style="background:#008080;">CRAIGSLIST</a></div></div>
+        <div class="task-item"><input type="checkbox" id="check15" class="traffic-check"><div style="flex-grow:1;"><div style="font-weight:800;">15. Instagram</div><a href="https://www.instagram.com/" target="_blank" class="link-btn" style="background:#008080;">INSTAGRAM</a></div></div>
     </div>
+
+    <button onclick="resetDailyTasks()" style="width:100%; padding:22px; background:#dc3545; color:#fff; border:none; border-radius:8px; font-weight:bold; font-size:17px; cursor:pointer; margin-top:20px;">
+        Reset All Daily Checkmarks
+    </button>
 </div>
+
+<hr style="margin:40px; border-top:2px solid #eee;">
+
+<div style="padding:0 40px 100px;">
+    <h3>Marketing Calendar</h3>
+    <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; max-width: 900px;">
+        </div>
+</div>
+
+<style>
+    .task-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+    .link-btn { display: inline-block; padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; margin-top: 5px; }
+    .cal-box { border: 1px solid #ccc; padding: 8px; min-height: 100px; background: #fff; border-radius: 5px; font-size: 12px; }
+    .cal-note { width: 100%; height: 60px; margin-top: 5px; font-size: 11px; border: 1px solid #eee; resize: none; }
+</style>
 
 <script>
-// --- MODAL PREVIEW LOGIC ---
-function openPreview(url) {
-    document.getElementById('preview-frame').src = url;
-    document.getElementById('preview-modal').style.display = 'flex';
-}
-function closePreview() {
-    document.getElementById('preview-frame').src = '';
-    document.getElementById('preview-modal').style.display = 'none';
-}
-
-// --- CALENDAR LOGIC ---
-const CAL_KEY = 'traffic_calendar_history';
-
-function initCalendar() {
-    const now = new Date();
-    const month = now.toLocaleString('default', { month: 'long' });
-    const year = now.getFullYear();
-    document.getElementById('calendar-month-year').innerText = `${month} ${year}`;
-
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const grid = document.getElementById('calendar-grid');
-    const history = JSON.parse(localStorage.getItem(CAL_KEY)) || {};
-
-    // Clear existing days (keep labels)
-    const labels = grid.querySelectorAll('.cal-day-label');
-    grid.innerHTML = '';
-    labels.forEach(l => grid.appendChild(l));
-
-    // Fill blanks
-    for (let i = 0; i < firstDay; i++) {
-        const blank = document.createElement('div');
-        grid.appendChild(blank);
-    }
-
-    // Fill days
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'cal-day';
-        dayDiv.innerText = day;
+    // RULE CONFIRMED: Site Name on button if Link exists, "NOTE" if not. 
+    function renderLinks() {
+        const grid = document.getElementById('research-links-grid');
+        const links = JSON.parse(localStorage.getItem('researchLinks') || '[]');
+        grid.innerHTML = '';
         
-        const dateKey = `${year}-${now.getMonth() + 1}-${day}`;
-        if (day === now.getDate()) dayDiv.classList.add('cal-today');
-        if (history[dateKey]) dayDiv.classList.add('cal-complete');
+        links.forEach((link, index) => {
+            const hasUrl = link.url && link.url.trim() !== "";
+            const btnColor = hasUrl ? "#007bff" : "linear-gradient(to bottom, #ff4d4d, #ffcc00)";
+            const btnText = hasUrl ? link.name.toUpperCase() : "NOTE";
+            const target = hasUrl ? `href="${link.url}" target="_blank"` : `href="#" onclick="return false;"`;
 
-        grid.appendChild(dayDiv);
-    }
-}
-
-function markTodayComplete() {
-    const now = new Date();
-    const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-    const history = JSON.parse(localStorage.getItem(CAL_KEY)) || {};
-    history[dateKey] = true;
-    localStorage.setItem(CAL_KEY, JSON.stringify(history));
-    initCalendar(); // Refresh view
-}
-
-// Progress & Checkboxes
-function updateProgress() {
-    const checks = document.querySelectorAll('.traffic-check');
-    let checked = 0;
-    checks.forEach(c => { if(c.checked) checked++; });
-
-    const percent = Math.round((checked / 15) * 100);
-    document.getElementById('daily-progress-fill').style.width = percent + "%";
-    
-    if (percent === 100) {
-        document.getElementById('progress-text').innerHTML = `GOAL REACHED! 🚀 (${checked}/15)`;
-        markTodayComplete(); // Trigger Calendar completion
-    } else {
-        document.getElementById('progress-text').innerHTML = `Daily Goal: ${percent}% (${checked}/15)`;
-    }
-}
-
-function initCheckboxes() {
-    document.querySelectorAll('.traffic-check').forEach(c => {
-        c.checked = localStorage.getItem(c.id) === 'true';
-        c.onclick = () => {
-            localStorage.setItem(c.id, c.checked);
-            updateProgress();
-        };
-    });
-    updateProgress();
-}
-
-function resetDailyTasks() {
-    if(confirm("Clear all daily checkmarks?")) {
-        document.querySelectorAll('.traffic-check').forEach(c => {
-            c.checked = false;
-            localStorage.setItem(c.id, false);
+            grid.innerHTML += `
+                <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px;">
+                    <div style="font-weight:bold; margin-bottom:5px;">${link.name}</div>
+                    <div style="font-size:12px; color:#666; margin-bottom:10px;">${link.note}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:11px; padding:3px 8px; border-radius:12px; background:#eee;">${link.status}</span>
+                        <a ${target} style="background:${btnColor}; color:white; padding:8px 15px; border-radius:5px; text-decoration:none; font-weight:bold; font-size:12px;">${btnText}</a>
+                    </div>
+                </div>
+            `;
         });
-        updateProgress();
     }
-}
 
-// Link Wheel
-const LINK_KEY = 'affiliate_link_wheel_v1';
+    function saveNewSource() {
+        const name = document.getElementById('newLinkName').value;
+        const url = document.getElementById('newLinkUrl').value; // ALLOWED TO BE BLANK
+        const status = document.getElementById('newLinkStatus').value;
+        const note = document.getElementById('newLinkNote').value;
 
-function renderLinks() {
-    const grid = document.getElementById('research-links-grid');
-    const stats = document.getElementById('stats-summary');
-    const data = JSON.parse(localStorage.getItem(LINK_KEY)) || [];
+        if(!name) return; // Site name still required for label
 
-    const colors = {Active:'#28a745', Testing:'#007bff', Paused:'#fd7e14'};
-    const counts = {Active:0, Testing:0, Paused:0};
-    data.forEach(item => counts[item.status] = (counts[item.status]||0) + 1);
-
-    stats.innerHTML = `Total: ${data.length} | Active: <span style="color:#28a745">${counts.Active}</span> | Testing: <span style="color:#007bff">${counts.Testing}</span> | Paused: <span style="color:#fd7e14">${counts.Paused}</span>`;
-
-    grid.innerHTML = '';
-    data.forEach((item, i) => {
-        const div = document.createElement('div');
-        div.style = `background:#fff; padding:22px; border:1px solid #ddd; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08);`;
-        div.innerHTML = `
-            <div style="font-weight:900; font-size:19px; margin-bottom:8px;">${item.name}</div>
-            <div style="color:#555; margin-bottom:12px; font-size:14.5px;">${item.notes || 'No notes'}</div>
-            <span style="background:${colors[item.status]||'#666'}; color:white; padding:5px 12px; border-radius:5px; font-size:12.5px; font-weight:bold;">${item.status}</span>
-            <br><br>
-            <div style="display:flex; gap:10px;">
-                <a href="${item.url}" target="_blank" style="flex:2; background:#007bff; color:white; padding:10px; text-decoration:none; border-radius:5px; font-weight:bold; text-align:center;">OPEN LINK</a>
-                <button onclick="openPreview('${item.url}')" style="flex:1; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">PREVIEW</button>
-            </div>
-            <button onclick="deleteLink(${i})" style="width:100%; margin-top:10px; background:#fff; border:1px solid #dc3545; color:#dc3545; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">DELETE</button>
-        `;
-        grid.appendChild(div);
-    });
-}
-
-function saveNewSource() {
-    const name = document.getElementById('newLinkName').value.trim();
-    let url = document.getElementById('newLinkUrl').value.trim();
-    const notes = document.getElementById('newLinkNote').value.trim();
-    const status = document.getElementById('newLinkStatus').value;
-    if(!name || !url) return alert("Name and URL are required!");
-    if(!url.startsWith('http')) url = 'https://' + url;
-    const data = JSON.parse(localStorage.getItem(LINK_KEY)) || [];
-    data.push({name, url, notes, status});
-    localStorage.setItem(LINK_KEY, JSON.stringify(data));
-    document.getElementById('newLinkName').value = '';
-    document.getElementById('newLinkUrl').value = '';
-    document.getElementById('newLinkNote').value = '';
-    renderLinks();
-}
-
-function deleteLink(i) {
-    if(confirm("Delete this source?")) {
-        const data = JSON.parse(localStorage.getItem(LINK_KEY)) || [];
-        data.splice(i, 1);
-        localStorage.setItem(LINK_KEY, JSON.stringify(data));
+        const links = JSON.parse(localStorage.getItem('researchLinks') || '[]');
+        links.push({ name, url, status, note });
+        localStorage.setItem('researchLinks', JSON.stringify(links));
+        
+        // Clear inputs
+        document.getElementById('newLinkName').value = '';
+        document.getElementById('newLinkUrl').value = '';
+        document.getElementById('newLinkNote').value = '';
         renderLinks();
     }
-}
 
-window.onload = () => {
-    initCalendar();
-    initCheckboxes();
-    renderLinks();
-};
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 31; i++) {
+            grid.innerHTML += `
+                <div class="cal-box">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${i}</strong>
+                        <input type="checkbox" id="cal-check-${i}">
+                    </div>
+                    <textarea class="cal-note" id="cal-note-${i}" placeholder="Add notes..."></textarea>
+                </div>
+            `;
+        }
+    }
+
+    // Initialize
+    window.onload = function() {
+        renderLinks();
+        generateCalendar();
+    };
+
+    function resetDailyTasks() {
+        document.querySelectorAll('.traffic-check').forEach(cb => cb.checked = false);
+    }
 </script>
-</body>
-</html>
