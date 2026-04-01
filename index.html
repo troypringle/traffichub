@@ -5,68 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Command Center</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2, h3 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; margin: 0; padding: 10px; }
+        .container { max-width: 1200px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
+        /* ADJUSTED SECTION DIVIDERS */
+        .section-header { 
+            text-align: center; 
+            color: white; 
+            padding: 8px; 
+            border-radius: 6px; 
+            margin: 25px 0 15px 0; 
+            font-size: 1.1em; 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bg-daily { background: #007bff; }
+        .bg-paid { background: #28a745; }
+        .bg-classified { background: #fd7e14; }
+        .bg-secondary { background: #6f42c1; }
+        .bg-social { background: #e83e8c; }
+        .bg-research { background: #17a2b8; }
+        .bg-calendar { background: #343a40; }
+
+        /* PROGRESS BAR */
+        #progress-container { background:#e9ecef; border-radius:10px; margin-bottom:30px; overflow:hidden; border: 1px solid #ccc; }
+        #progress-bar { background:#007bff; width:0%; height:45px; text-align:center; color:white; font-weight:bold; line-height:45px; transition:width 0.5s; font-size: 18px; }
+
         /* TASK GRID */
-        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .task-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; transition: all 0.3s ease; }
-        .task-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .task-item input[type="checkbox"] { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .task-item { display: flex; align-items: center; background: #fff; padding: 18px; border-radius: 8px; border: 1px solid #eee; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .task-item:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .task-item input[type="checkbox"] { width: 26px; height: 26px; margin-right: 18px; cursor: pointer; }
         
-        /* BUTTONS */
-        .link-btn { display: inline-block; padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; margin-top: 5px; }
-        .link-btn:hover { background: #0056b3; }
-        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        .delete-btn:hover { background: #cc0000; }
+        /* COMMAND BUTTONS */
+        .link-btn { display: inline-block; padding: 12px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold; margin-top: 8px; text-align: center; width: 85%; }
+        .link-btn:hover { background: #0056b3; opacity: 0.9; }
         
-        /* STATUS BADGES */
-        .status-badge { font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: bold; text-transform: uppercase; color: white; }
+        /* RESTORED STATUS COLORS */
+        .status-badge { font-size: 10px; padding: 4px 10px; border-radius: 12px; font-weight: bold; text-transform: uppercase; color: white; }
         .status-active { background: #28a745; }
         .status-testing { background: #ffc107; color: #333; }
         .status-paused { background: #6c757d; }
 
-        /* CALENDAR STYLING */
-        .calendar-section { margin-top: 50px; }
-        .cal-month-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-        
-        /* BLUE DAYS OF WEEK */
-        .weekday-label { text-align: center; font-weight: bold; padding: 10px 0; background: #007bff; color: white; border-radius: 4px; font-size: 14px; }
-        
-        /* DARKER GREEN DAY BOXES */
-        .cal-box { border: 1px solid #ddd; background: #b1d8b7; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-height: 110px; transition: box-shadow 0.2s; }
-        .cal-box:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #007bff; }
-        .cal-box.empty { background: #f9f9f9; border: 1px dashed #eee; }
-        
-        .cal-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; padding: 6px 10px; background: rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.1); }
-        
-        /* BLUE CHECKMARK */
-        .cal-check { width: 18px; height: 18px; cursor: pointer; accent-color: blue; }
-        
-        .cal-note { width: 100%; flex-grow: 1; font-size: 11px; border: none; outline: none; resize: none; padding: 8px; box-sizing: border-box; background: transparent; color: #1b4332; }
-        .cal-note::placeholder { color: #555; }
-        
-        /* EDITABLE TEXT */
-        .editable-text:hover { background: #fffde7; cursor: text; outline: 1px dashed #ccc; border-radius: 4px; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
-        @media (max-width: 600px) { 
-            .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; } 
-            .cal-header { padding: 2px 5px; font-size: 10px; }
-            .cal-box { min-height: 80px; }
-        }
+        /* CALENDAR */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .weekday-label { text-align: center; font-weight: bold; padding: 10px 0; background: #007bff; color: white; border-radius: 4px; font-size: 14px; }
+        .cal-box { border: 1px solid #ddd; background: #b1d8b7; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-height: 120px; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; padding: 6px 10px; background: rgba(0,0,0,0.08); }
+        .cal-check { width: 18px; height: 18px; accent-color: blue; }
+        .cal-note { width: 100%; flex-grow: 1; font-size: 11px; border: none; outline: none; resize: none; padding: 8px; background: transparent; color: #1b4332; }
+
+        .editable-text:hover { background: #fffde7; cursor: text; outline: 1px dashed #ccc; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Daily Traffic Command</h2>
-    <div id="progress-container" style="background:#e9ecef; border-radius:10px; margin-bottom:30px; overflow:hidden;">
-        <div id="progress-bar" style="background:#28a745; width:0%; height:25px; text-align:center; color:white; font-weight:bold; transition:width 0.5s;">0%</div>
+    <h2 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">Traffic Command Center</h2>
+    
+    <div id="progress-container">
+        <div id="progress-bar">0%</div>
     </div>
 
-    <h3>Daily Traffic Routine</h3>
+    <div class="section-header bg-daily">Daily Traffic Routine</div>
     <div class="task-grid">
         <div class="task-item"><input type="checkbox" id="t1" class="traffic-check" onchange="updateProgress()"><div><strong>1. MLGS — Lead mailer</strong><br><a href="https://troypringle.github.io/MLGS-Page/" target="_blank" class="link-btn">OPEN MLGS</a></div></div>
         <div class="task-item"><input type="checkbox" id="t2" class="traffic-check" onchange="updateProgress()"><div><strong>2. Herculist — Credit zone</strong><br><a href="http://www.herculist.com/cgi-bin/thezoneadsdisplay.cgi?325hv9d2u65hc2z3w7jo5j&8tmjd4w2k9f6bnh7rew7gkg5" target="_blank" class="link-btn">ENTER THE ZONE</a></div></div>
@@ -75,7 +79,7 @@
         <div class="task-item"><input type="checkbox" id="t5" class="traffic-check" onchange="updateProgress()"><div><strong>5. Easy Hits 4 U — Credits</strong><br><a href="https://www.easyhits4u.com/account/" target="_blank" class="link-btn">BUY CREDITS</a></div></div>
     </div>
 
-    <h3>Paid & Hands-Off</h3>
+    <div class="section-header bg-paid">Paid & Hands-Off</div>
     <div class="task-grid">
         <div class="task-item"><input type="checkbox" id="t6" class="traffic-check" onchange="updateProgress()"><div><strong>6. Traffic Zest</strong><br><a href="https://trafficzest.com/login" target="_blank" class="link-btn" style="background:#28a745;">TRAFFIC ZEST</a></div></div>
         <div class="task-item"><input type="checkbox" id="t7" class="traffic-check" onchange="updateProgress()"><div><strong>7. Udimi</strong><br><a href="https://udimi.com/login" target="_blank" class="link-btn" style="background:#28a745;">UDIMI LOGIN</a></div></div>
@@ -83,29 +87,27 @@
         <div class="task-item"><input type="checkbox" id="t9" class="traffic-check" onchange="updateProgress()"><div><strong>9. Easy Solo Ads</strong><br><a href="https://www.easysoloads.com/" target="_blank" class="link-btn" style="background:#28a745;">EASY SOLO ADS</a></div></div>
     </div>
 
-    <h3>Classified Ads</h3>
+    <div class="section-header bg-classified">Classified Ads</div>
     <div class="task-grid">
-        <div class="task-item"><input type="checkbox" id="t10" class="traffic-check" onchange="updateProgress()"><div><strong>10. QuickAds.ai</strong><br><a href="https://quickads.ai/" target="_blank" class="link-btn" style="background:#fd7e14;">QUICKADS.AI</a></div></div>
-        <div class="task-item"><input type="checkbox" id="t11" class="traffic-check" onchange="updateProgress()"><div><strong>11. QwikAd</strong><br><a href="https://qwikad.com/" target="_blank" class="link-btn" style="background:#fd7e14;">QWIKAD POST</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t14" class="traffic-check" onchange="updateProgress()"><div><strong>10. Craigslist</strong><br><a href="https://accounts.craigslist.org/login" target="_blank" class="link-btn" style="background:#008080;">CRAIGSLIST</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t10" class="traffic-check" onchange="updateProgress()"><div><strong>11. QuickAds.ai</strong><br><a href="https://quickads.ai/" target="_blank" class="link-btn" style="background:#fd7e14;">QUICKADS.AI</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t11" class="traffic-check" onchange="updateProgress()"><div><strong>12. QwikAd</strong><br><a href="https://qwikad.com/" target="_blank" class="link-btn" style="background:#fd7e14;">QWIKAD POST</a></div></div>
     </div>
 
-    <h3>Secondary Mailers</h3>
+    <div class="section-header bg-secondary">Secondary Mailers</div>
     <div class="task-grid">
-        <div class="task-item"><input type="checkbox" id="t12" class="traffic-check" onchange="updateProgress()"><div><strong>12. Referral Frenzy</strong><br><a href="https://www.referralfrenzy.com/login.php" target="_blank" class="link-btn" style="background:#6f42c1;">REFERRAL FRENZY</a></div></div>
-        <div class="task-item"><input type="checkbox" id="t13" class="traffic-check" onchange="updateProgress()"><div><strong>13. SOTAM</strong><br><a href="https://sotam.net/login" target="_blank" class="link-btn" style="background:#6f42c1;">SOTAM LOGIN</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t12" class="traffic-check" onchange="updateProgress()"><div><strong>13. Referral Frenzy</strong><br><a href="https://www.referralfrenzy.com/login.php" target="_blank" class="link-btn" style="background:#6f42c1;">REFERRAL FRENZY</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t13" class="traffic-check" onchange="updateProgress()"><div><strong>14. SOTAM</strong><br><a href="https://sotam.net/login" target="_blank" class="link-btn" style="background:#6f42c1;">SOTAM LOGIN</a></div></div>
     </div>
 
-    <h3>Social & Local</h3>
+    <div class="section-header bg-social">Social Media</div>
     <div class="task-grid">
-        <div class="task-item"><input type="checkbox" id="t14" class="traffic-check" onchange="updateProgress()"><div><strong>14. Craigslist</strong><br><a href="https://accounts.craigslist.org/login" target="_blank" class="link-btn" style="background:#008080;">CRAIGSLIST</a></div></div>
-        <div class="task-item"><input type="checkbox" id="t15" class="traffic-check" onchange="updateProgress()"><div><strong>15. Instagram</strong><br><a href="https://www.instagram.com/" target="_blank" class="link-btn" style="background:#008080;">INSTAGRAM</a></div></div>
+        <div class="task-item"><input type="checkbox" id="t15" class="traffic-check" onchange="updateProgress()"><div><strong>15. Instagram</strong><br><a href="https://www.instagram.com/" target="_blank" class="link-btn" style="background:#e83e8c;">INSTAGRAM</a></div></div>
     </div>
 
-    <button onclick="resetDailyTasks()" style="width:100%; padding:15px; background:#dc3545; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Reset All Daily Checkmarks</button>
+    <button onclick="resetDailyTasks()" style="width:50%; display: block; margin: 30px auto; padding:10px; background:#dc3545; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size: 14px;">Reset All Daily Checkmarks</button>
 
-    <hr style="margin:40px 0;">
-
-    <h3>Link Wheel & Research Hub</h3>
+    <div class="section-header bg-research">Link Wheel & Research Hub</div>
     <div style="background:#f9f9f9; padding:20px; border-radius:10px; border:2px dashed #ccc; margin-bottom:20px;">
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
             <input type="text" id="newLinkName" placeholder="Site Name" style="padding:10px;">
@@ -116,26 +118,24 @@
                 <option value="Paused">Paused</option>
             </select>
         </div>
-        <input type="text" id="newLinkNote" placeholder="Quick Notes..." style="width:calc(100% - 145px); padding:10px;">
+        <input type="text" id="newLinkNote" placeholder="Quick Notes..." style="width:calc(100% - 150px); padding:10px;">
         <button onclick="saveNewSource()" style="background:#007bff; color:white; padding:10px 20px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">SAVE SOURCE</button>
     </div>
-    <div id="research-links-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;"></div>
+    <div id="research-links-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;"></div>
 
+    <div class="section-header bg-calendar">Marketing Calendar</div>
     <div class="calendar-section">
-        <h3>Marketing Calendar</h3>
-        <div id="cal-title" class="cal-month-title">Month Year</div>
+        <div id="cal-title" class="cal-month-title" style="text-align: center; font-size: 1.5em; margin-bottom: 15px;"></div>
         <div id="calendar-grid" class="calendar-grid"></div>
     </div>
 </div>
 
 <script>
-    // --- TRAFFIC ROUTINE PERSISTENCE ---
     function updateProgress() {
         const checks = document.querySelectorAll('.traffic-check');
         const checkedStates = {};
         checks.forEach(c => checkedStates[c.id] = c.checked);
         localStorage.setItem('trafficCheckmarks', JSON.stringify(checkedStates));
-        
         const checkedCount = Array.from(checks).filter(c => c.checked).length;
         const percent = Math.round((checkedCount / checks.length) * 100);
         const bar = document.getElementById('progress-bar');
@@ -158,29 +158,29 @@
         }
     }
 
-    // --- LINK WHEEL LOGIC ---
     function renderLinks() {
         const grid = document.getElementById('research-links-grid');
         const links = JSON.parse(localStorage.getItem('researchLinks') || '[]');
         grid.innerHTML = '';
         links.forEach((link, index) => {
             const hasUrl = link.url && link.url.trim() !== "";
-            const btnStyle = hasUrl ? "background:#007bff;" : "background:linear-gradient(to bottom, #ff4d4d, #ffcc00);";
-            const btnText = hasUrl ? link.name.toUpperCase() : "NOTE";
+            const btnStyle = hasUrl ? "background:#007bff;" : "background:linear-gradient(to bottom, #ff8c00, #ff4500);";
+            const btnText = hasUrl ? link.name.toUpperCase() : "VIEW NOTE";
             const target = hasUrl ? `href="${link.url}" target="_blank"` : `href="javascript:void(0)"`;
             
+            // Map status to class
             let statusClass = "status-active";
             if(link.status === "Testing") statusClass = "status-testing";
             if(link.status === "Paused") statusClass = "status-paused";
             
             grid.innerHTML += `
                 <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px; position:relative;">
-                    <button class="delete-btn" onclick="deleteLink(${index})" style="position:absolute; top:5px; right:5px;">X</button>
+                    <button class="delete-btn" onclick="deleteLink(${index})" style="position:absolute; top:8px; right:8px;">DELETE</button>
                     <strong class="editable-text" contenteditable="true" onblur="updateLinkData(${index}, 'name', this.innerText)">${link.name}</strong><br>
-                    <small class="editable-text" style="display:block; min-height:1.2em; color: #666;" contenteditable="true" onblur="updateLinkData(${index}, 'note', this.innerText)">${link.note}</small><br>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <small class="editable-text" style="display:block; min-height:1.2em; color: #666; margin-top:5px;" contenteditable="true" onblur="updateLinkData(${index}, 'note', this.innerText)">${link.note}</small><br>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
                         <span class="status-badge ${statusClass}">${link.status}</span>
-                        <a ${target} class="link-btn" style="${btnStyle}">${btnText}</a>
+                        <a ${target} class="link-btn" style="${btnStyle}; padding: 8px 12px; width: auto; font-size: 11px;">${btnText}</a>
                     </div>
                 </div>`;
         });
@@ -209,18 +209,18 @@
     }
 
     function deleteLink(index) {
-        let links = JSON.parse(localStorage.getItem('researchLinks') || '[]');
-        links.splice(index, 1);
-        localStorage.setItem('researchLinks', JSON.stringify(links));
-        renderLinks();
+        if(confirm("Delete this?")) {
+            let links = JSON.parse(localStorage.getItem('researchLinks') || '[]');
+            links.splice(index, 1);
+            localStorage.setItem('researchLinks', JSON.stringify(links));
+            renderLinks();
+        }
     }
 
-    // --- CALENDAR LOGIC ---
     function saveCalendarData(id) {
         const savedData = JSON.parse(localStorage.getItem('marketingCalendar') || '{}');
         const note = document.getElementById(`cal-note-${id}`).value;
         const checked = document.getElementById(`cal-check-${id}`).checked;
-        
         savedData[id] = { note, checked };
         localStorage.setItem('marketingCalendar', JSON.stringify(savedData));
     }
@@ -231,39 +231,21 @@
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth();
-        
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        
         title.innerText = `${monthNames[month]} ${year}`;
-        
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const savedData = JSON.parse(localStorage.getItem('marketingCalendar') || '{}');
-        
         grid.innerHTML = '';
-        
-        // Weekday Labels
-        dayNames.forEach(day => {
-            grid.innerHTML += `<div class="weekday-label">${day}</div>`;
-        });
-        
-        // Empty boxes
-        for (let i = 0; i < firstDay; i++) {
-            grid.innerHTML += `<div class="cal-box empty"></div>`;
-        }
-        
-        // Actual days
+        dayNames.forEach(day => grid.innerHTML += `<div class="weekday-label">${day}</div>`);
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-box empty"></div>`;
         for (let d = 1; d <= daysInMonth; d++) {
             const dateId = `${year}-${month + 1}-${d}`;
             const dayData = savedData[dateId] || { note: '', checked: false };
-            
             grid.innerHTML += `
                 <div class="cal-box">
-                    <div class="cal-header">
-                        <span>${d}</span>
-                        <input type="checkbox" class="cal-check" id="cal-check-${dateId}" ${dayData.checked ? 'checked' : ''} onchange="saveCalendarData('${dateId}')">
-                    </div>
+                    <div class="cal-header"><span>${d}</span><input type="checkbox" class="cal-check" id="cal-check-${dateId}" ${dayData.checked ? 'checked' : ''} onchange="saveCalendarData('${dateId}')"></div>
                     <textarea class="cal-note" id="cal-note-${dateId}" placeholder="Notes..." oninput="saveCalendarData('${dateId}')">${dayData.note}</textarea>
                 </div>`;
         }
