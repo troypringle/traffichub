@@ -3,102 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Command Center Ultra</title>
+    <title>Traffic Command Center Elite+</title>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #1c1e21; margin: 0; padding: 15px; }
-        .container { max-width: 1600px; margin: auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
-        
-        /* Layout & Grid */
-        #progress-container { background:#e4e6eb; border-radius:12px; margin-bottom:25px; overflow:hidden; border: 1px solid #ced4da; }
-        #progress-bar { background: linear-gradient(90deg, #007bff, #00c6ff); width:0%; height:40px; text-align:center; color:white; font-weight:bold; line-height:40px; transition:width 0.4s ease; font-size: 16px; }
+        :root { --cols: 4; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+        .container { max-width: 1680px; margin: auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
 
-        .section-wrapper { margin-bottom: 25px; border-radius: 10px; border: 1px solid #ddd; background: #fff; transition: box-shadow 0.2s; }
-        .section-header { 
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .slider-wrap { display: flex; align-items: center; gap: 12px; font-weight: bold; }
+
+        #progress-container { background:#e9ecef; border-radius:12px; margin-bottom:25px; overflow:hidden; border:1px solid #ccc; }
+        #progress-bar { background: linear-gradient(90deg, #28a745, #218838); height:42px; width:0%; text-align:center; color:white; font-weight:bold; line-height:42px; transition:width 0.5s; }
+
+        .section-wrapper { margin-bottom: 28px; border-radius: 12px; border: 1px solid #ddd; background:#fff; overflow:hidden; transition:0.2s; }
+        .section-wrapper.collapsed .task-grid { display: none; }
+
+        .section-header {
             display: flex; justify-content: space-between; align-items: center;
-            color: white; padding: 12px 20px; cursor: grab; font-weight: bold; text-transform: uppercase;
+            color: white; padding: 14px 20px; cursor: grab; font-weight: bold; text-transform: uppercase;
         }
-        .section-header:active { cursor: grabbing; }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--cols), 1fr);
+            gap: 16px; padding: 16px; background: #fdfdfd;
+        }
+        @media (max-width: 1200px) {
+            .task-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        }
 
-        /* 4-Column Grid Logic */
-        .task-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(23%, 1fr)); 
-            gap: 15px; padding: 15px; min-height: 80px; 
+        .task-item {
+            background: #fff; padding: 14px; border-radius: 10px; border: 2px solid #eee;
+            position: relative; transition: all 0.2s; cursor: grab;
         }
-        @media (max-width: 1100px) { .task-grid { grid-template-columns: repeat(auto-fill, minmax(45%, 1fr)); } }
-        @media (max-width: 600px) { .task-grid { grid-template-columns: 1fr; } }
+        .task-item:hover { border-color: #007bff; box-shadow: 0 6px 16px rgba(0,123,255,0.1); }
+        .task-item.dragging { opacity: 0.45; border: 2px dashed #007bff; }
 
-        /* Task Cards */
-        .task-item { 
-            position: relative; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e4e6eb; 
-            cursor: grab; display: flex; flex-direction: column; gap: 8px; transition: 0.2s;
-        }
-        .task-item:hover { border-color: #007bff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        
-        .task-top { display: flex; align-items: flex-start; justify-content: space-between; }
-        .task-check { width: 22px; height: 22px; cursor: pointer; }
-        
-        .link-btn { 
-            display: block; width: 100%; padding: 8px; color: white; text-decoration: none; 
-            border-radius: 5px; font-size: 12px; font-weight: bold; text-align: center; margin-top: 5px;
-        }
-        
-        /* Sidebar/Move Menu Style */
-        .move-select { font-size: 10px; padding: 2px; border-radius: 4px; border: 1px solid #ccc; width: 100%; margin-top: 5px; background: #fff; }
-        
-        .bg-daily { background: #007bff; }
-        .bg-paid { background: #28a745; }
-        .bg-classified { background: #fd7e14; }
-        .bg-secondary { background: #6f42c1; }
-        .bg-social { background: #e83e8c; }
-        .bg-research { background: #17a2b8; }
-        .bg-custom { background: #555; }
+        .task-top { display: flex; align-items: flex-start; gap: 10px; }
+        .task-name { font-weight: bold; flex-grow: 1; outline: none; font-size: 14px; }
+        .task-check { width: 24px; height: 24px; cursor: pointer; }
 
-        .collapsed .task-grid, .collapsed .add-task-btn-wrap { display: none; }
-        .status-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; display: inline-block; }
-        .status-Active { background: #28a745; }
-        .status-Testing { background: #ffc107; color: #333; }
-        .status-Paused { background: #6c757d; }
+        .link-btn {
+            display: block; padding: 10px; color: white; text-decoration: none;
+            border-radius: 6px; font-weight: bold; text-align: center; margin: 6px 0;
+        }
+
+        .task-note {
+            font-size: 12px; background: #fffde7; padding: 10px; border-radius: 6px;
+            border: 1px solid #ffe57f; min-height: 48px; outline: none;
+        }
+
+        .move-menu { width: 100%; font-size: 11px; padding: 5px; border-radius: 4px; }
+        .del-task { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; }
+        .del-task:hover { color: #e74c3c; }
+
+        .status-badge {
+            font-size: 10px; padding: 2px 8px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #1a1a1a;">Traffic Command Center</h2>
+    <div class="controls-bar">
+        <div class="slider-wrap">
+            <span>Columns:</span>
+            <input type="range" min="2" max="6" value="4" id="colSlider" oninput="updateCols(this.value)">
+            <span id="colVal">4 Columns</span>
+        </div>
         <div>
-            <button onclick="exportBackup()" style="background:#28a745; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">Backup</button>
-            <button onclick="document.getElementById('importFile').click()" style="background:#ffc107; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">Restore</button>
+            <button onclick="exportBackup()" style="background:#28a745;color:white;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;">💾 Backup</button>
+            <button onclick="document.getElementById('importFile').click()" style="background:#ffc107;color:black;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;">📂 Restore</button>
             <input type="file" id="importFile" style="display:none;" onchange="importBackup(event)">
         </div>
     </div>
-    
-    <div id="progress-container"><div id="progress-bar">0%</div></div>
+
+    <div id="progress-container"><div id="progress-bar">Daily Goal: 0%</div></div>
     <div id="sections-container"></div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <button onclick="createNewSection()" style="background:#1c1e21; color:white; border:none; padding:12px 30px; border-radius:8px; cursor:pointer; font-weight:bold;">+ ADD NEW SECTION</button>
+    <div style="text-align:center; margin-top:40px;">
+        <button onclick="createNewSection()" style="background:#007bff;color:white;border:none;padding:14px 36px;border-radius:10px;font-size:16px;cursor:pointer;">
+            + ADD NEW CATEGORY
+        </button>
     </div>
 </div>
 
 <script>
-    // --- STATE MANAGEMENT ---
-    let tasks = JSON.parse(localStorage.getItem('mainTasks')) || [];
-    let categories = JSON.parse(localStorage.getItem('categories')) || [
-        { id: 'daily', name: 'Daily Traffic Routine', color: 'bg-daily' },
-        { id: 'paid', name: 'Paid & Hands-Off', color: 'bg-paid' },
-        { id: 'classified', name: 'Classified Ads', color: 'bg-classified' },
-        { id: 'secondary', name: 'Secondary Mailers', color: 'bg-secondary' },
-        { id: 'social', name: 'Social Media', color: 'bg-social' },
-        { id: 'research', name: 'Research Hub', color: 'bg-research' }
-    ];
-    let folded = JSON.parse(localStorage.getItem('foldedSections')) || {};
+    // ====================== DATA MIGRATION ======================
+    let tasks = [];
+    let categories = [];
+    let folded = {};
+
+    function migrateData() {
+        // Try all old keys
+        const oldTasks = JSON.parse(localStorage.getItem('tasks_v4') || localStorage.getItem('mainTasks') || '[]');
+        const oldCats = JSON.parse(localStorage.getItem('cats_v4') || localStorage.getItem('categories') || '[]');
+        const oldFolded = JSON.parse(localStorage.getItem('foldedSections') || '{}');
+
+        if (oldTasks.length > 0) tasks = oldTasks;
+        if (oldCats.length > 0) categories = oldCats;
+        if (Object.keys(oldFolded).length > 0) folded = oldFolded;
+
+        // Default categories if none exist
+        if (categories.length === 0) {
+            categories = [
+                { id: 'c1', name: 'Daily Traffic Routine', color: '#007bff' },
+                { id: 'c2', name: 'Research Hub', color: '#17a2b8' }
+            ];
+        }
+    }
 
     function save() {
-        localStorage.setItem('mainTasks', JSON.stringify(tasks));
-        localStorage.setItem('categories', JSON.stringify(categories));
-        localStorage.setItem('foldedSections', JSON.stringify(folded));
+        localStorage.setItem('tasks_elite', JSON.stringify(tasks));
+        localStorage.setItem('cats_elite', JSON.stringify(categories));
+        localStorage.setItem('folded_elite', JSON.stringify(folded));
         updateProgress();
+    }
+
+    // ====================== RENDER ======================
+    function updateCols(val) {
+        document.documentElement.style.setProperty('--cols', val);
+        document.getElementById('colVal').innerText = val + " Columns";
+        localStorage.setItem('pref_cols', val);
     }
 
     function render() {
@@ -106,194 +130,253 @@
         container.innerHTML = '';
 
         categories.forEach(cat => {
-            const isFolded = folded[cat.id] ? 'collapsed' : '';
-            const sectionTasks = tasks.filter(t => t.category === cat.id);
-            
-            let html = `
-                <div class="section-wrapper ${isFolded}" id="wrap-${cat.id}" draggable="true" ondragstart="dragSection(event)" ondragover="allowDrop(event)" ondrop="dropSection(event)">
-                    <div class="section-header ${cat.color}" onclick="toggleFold('${cat.id}')">
+            const collapsed = folded[cat.id] ? 'collapsed' : '';
+            const catTasks = tasks.filter(t => t.catId === cat.id || t.category === cat.id);
+
+            const html = `
+                <div class="section-wrapper ${collapsed}" id="sec-${cat.id}" draggable="true" ondragstart="dragSection(event)">
+                    <div class="section-header" style="background:${cat.color}" onclick="toggleFold('${cat.id}')">
                         <span contenteditable="true" onclick="event.stopPropagation()" onblur="updateCatName('${cat.id}', this.innerText)">${cat.name}</span>
                         <div style="display:flex; gap:8px;">
-                            ${cat.id === 'daily' ? '<button onclick="event.stopPropagation(); resetChecks()" style="font-size:10px; cursor:pointer;">RESET</button>' : ''}
-                            <button onclick="event.stopPropagation(); deleteSection('${cat.id}')" style="font-size:10px; cursor:pointer;">DEL</button>
+                            <input type="color" value="${cat.color}" onchange="updateCatColor('${cat.id}', this.value)" style="width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;">
+                            <button onclick="event.stopPropagation();addTask('${cat.id}')" style="background:white;color:black;border:none;padding:4px 10px;border-radius:4px;font-size:11px;">+ Task</button>
+                            <button onclick="event.stopPropagation();deleteSection('${cat.id}')" style="background:rgba(0,0,0,0.3);color:white;border:none;padding:4px 10px;border-radius:4px;font-size:11px;">DEL</button>
                         </div>
                     </div>
                     <div class="task-grid" ondragover="allowDrop(event)" ondrop="dropTask(event, '${cat.id}')">
-                        ${sectionTasks.map(t => renderTask(t)).join('')}
-                    </div>
-                    <div class="add-task-btn-wrap" style="padding: 10px; text-align: right;">
-                        <button onclick="addTask('${cat.id}')" style="background:none; border:1px dashed #ccc; cursor:pointer; font-size:11px;">+ Add Task</button>
+                        ${catTasks.map(t => renderTask(t)).join('')}
                     </div>
                 </div>`;
             container.innerHTML += html;
         });
+
         updateProgress();
-        updateMLGSTimer();
+        updateMLGS();
     }
 
     function renderTask(t) {
-        const moveOptions = categories.map(c => `<option value="${c.id}" ${t.category === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
-        
+        const moveOptions = categories.map(c => `<option value="${c.id}" ${ (t.catId === c.id || t.category === c.id) ? 'selected' : ''}>→ ${c.name}</option>`).join('');
+
         return `
             <div class="task-item" id="${t.id}" draggable="true" ondragstart="dragTask(event)">
+                <button class="del-task" onclick="deleteTask('${t.id}')">×</button>
                 <div class="task-top">
-                    <input type="checkbox" class="task-check" ${t.checked ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                    <strong contenteditable="true" onblur="updateTask('${t.id}', 'name', this.innerText)" style="flex-grow:1; margin-left:10px; font-size:13px;">${t.name}</strong>
-                    <button onclick="deleteTask('${t.id}')" style="border:none; background:none; cursor:pointer; color:#999;">✕</button>
+                    <input type="checkbox" class="task-check" ${t.checked ? 'checked' : ''} onchange="toggleCheck('${t.id}')">
+                    <div class="task-name" contenteditable="true" onblur="updateTask('${t.id}', 'name', this.innerText)">${t.name}</div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="status-badge status-${t.status || 'Active'}" onclick="cycleStatus('${t.id}')">${t.status || 'Active'}</span>
-                    <small style="font-size:9px; color:#007bff; cursor:pointer;" onclick="editLink('${t.id}')">Edit URL</small>
-                </div>
-                <a href="${t.url}" target="_blank" class="link-btn" style="background:${t.id==='t1'?'#007bff':'#444'}" onclick="handleMLGS('${t.id}')">${t.btnText || 'OPEN'}</a>
-                ${t.id === 't1' ? '<span id="mlgs-timer" style="font-size:10px; text-align:center; color:red;"></span>' : ''}
-                <div style="font-size:10px; color:#777; border-top:1px solid #eee; padding-top:5px;" contenteditable="true" onblur="updateTask('${t.id}', 'note', this.innerText)">${t.note || 'Notes...'}</div>
-                
-                <select class="move-select" onchange="moveTaskTo('${t.id}', this.value)">
-                    <option disabled selected>Move to section...</option>
+
+                <a href="${t.url || '#'}" target="_blank" class="link-btn" 
+                   style="background:${t.id==='t1'?'#007bff':'#28a745'}" 
+                   onclick="handleMLGSClick('${t.id}')">${t.btnText || 'OPEN LINK'}</a>
+
+                ${t.id === 't1' ? '<div id="mlgs-timer" style="font-size:11px;text-align:center;font-weight:bold;color:red;"></div>' : ''}
+
+                <div class="task-note" contenteditable="true" onblur="updateTask('${t.id}', 'note', this.innerText)">${t.note || 'Add notes here...'}</div>
+
+                <span class="status-badge" style="background:${getStatusColor(t.status)}" onclick="cycleStatus('${t.id}')">
+                    ${t.status || 'Active'}
+                </span>
+
+                <select class="move-menu" onchange="moveTask('${t.id}', this.value)">
+                    <option disabled selected>Quick Move...</option>
                     ${moveOptions}
                 </select>
             </div>`;
     }
 
-    // --- ACTIONS ---
-    function moveTaskTo(taskId, newCatId) {
-        const task = tasks.find(t => t.id === taskId);
-        if (task) {
-            task.category = newCatId;
-            save();
-            render();
-        }
+    function getStatusColor(status) {
+        if (status === "Testing") return "#ffc107";
+        if (status === "Paused") return "#6c757d";
+        return "#28a745";
     }
 
-    function toggleTask(id) {
+    // ====================== ACTIONS ======================
+    function toggleCheck(id) {
         const task = tasks.find(t => t.id === id);
         if (task) task.checked = !task.checked;
         save();
     }
 
-    function updateTask(id, field, val) {
+    function updateTask(id, key, value) {
         const task = tasks.find(t => t.id === id);
-        if (task) task[field] = val;
+        if (task) task[key] = value;
         save();
     }
 
-    function addTask(catId) {
-        const name = prompt("Task Name:");
-        if (!name) return;
-        tasks.push({ id: 't' + Date.now(), category: catId, name, url: '#', btnText: 'OPEN', status: 'Active', checked: false, note: '' });
+    function updateCatName(id, name) {
+        const cat = categories.find(c => c.id === id);
+        if (cat) cat.name = name;
         save();
-        render();
+    }
+
+    function updateCatColor(id, color) {
+        const cat = categories.find(c => c.id === id);
+        if (cat) cat.color = color;
+        save(); render();
+    }
+
+    function addTask(catId) {
+        const name = prompt("Enter task name:");
+        if (!name) return;
+        tasks.push({
+            id: 't' + Date.now(),
+            catId: catId,
+            name: name,
+            url: '#',
+            btnText: 'OPEN LINK',
+            checked: false,
+            note: '',
+            status: 'Active'
+        });
+        save(); render();
+    }
+
+    function createNewSection() {
+        const name = prompt("New category name:");
+        if (!name) return;
+        categories.push({ id: 'c' + Date.now(), name, color: '#555555' });
+        save(); render();
+    }
+
+    function deleteTask(id) {
+        if (confirm("Delete this task?")) {
+            tasks = tasks.filter(t => t.id !== id);
+            save(); render();
+        }
+    }
+
+    function deleteSection(id) {
+        if (confirm("Delete this section and all tasks inside?")) {
+            categories = categories.filter(c => c.id !== id);
+            tasks = tasks.filter(t => t.catId !== id && t.category !== id);
+            save(); render();
+        }
+    }
+
+    function moveTask(taskId, newCatId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (task) {
+            task.catId = newCatId;
+            if (task.category) delete task.category; // normalize
+        }
+        save(); render();
+    }
+
+    function cycleStatus(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+        const statuses = ["Active", "Testing", "Paused"];
+        const current = statuses.indexOf(task.status || "Active");
+        task.status = statuses[(current + 1) % 3];
+        save(); render();
     }
 
     function toggleFold(id) {
         folded[id] = !folded[id];
-        save();
-        render();
+        save(); render();
     }
 
-    function cycleStatus(id) {
-        const s = ["Active", "Testing", "Paused"];
-        const task = tasks.find(t => t.id === id);
-        task.status = s[(s.indexOf(task.status || "Active") + 1) % 3];
-        save();
-        render();
-    }
-
-    function createNewSection() {
-        const n = prompt("Section Name:");
-        if (n) { categories.push({ id: 'c'+Date.now(), name: n, color: 'bg-custom' }); save(); render(); }
-    }
-
-    function deleteSection(id) {
-        if (confirm("Delete this section?")) {
-            categories = categories.filter(c => c.id !== id);
-            save();
-            render();
-        }
-    }
-
-    function deleteTask(id) {
-        tasks = tasks.filter(t => t.id !== id);
-        save();
-        render();
-    }
-
-    // --- DRAG & DROP LOGIC ---
+    // ====================== DRAG & DROP ======================
     let draggedId = null;
-    function dragTask(e) { draggedId = e.target.id; e.dataTransfer.setData("type", "task"); }
-    function dragSection(e) { draggedId = e.currentTarget.id; e.dataTransfer.setData("type", "section"); }
+    let draggedType = null;
+
+    function dragTask(e) { draggedId = e.target.id; draggedType = "task"; }
+    function dragSection(e) { draggedId = e.currentTarget.id; draggedType = "section"; }
     function allowDrop(e) { e.preventDefault(); }
 
-    function dropTask(e, catId) {
+    function dropTask(e, targetCatId) {
         e.preventDefault();
-        if (e.dataTransfer.getData("type") !== "task") return;
+        if (draggedType !== "task") return;
         const task = tasks.find(t => t.id === draggedId);
-        if (task) { task.category = catId; save(); render(); }
+        if (task) {
+            task.catId = targetCatId;
+            if (task.category) delete task.category;
+            save(); render();
+        }
     }
 
     function dropSection(e) {
         e.preventDefault();
-        if (e.dataTransfer.getData("type") !== "section") return;
+        if (draggedType !== "section") return;
         const targetId = e.currentTarget.id;
-        const dIdx = categories.findIndex(c => `wrap-${c.id}` === draggedId);
-        const tIdx = categories.findIndex(c => `wrap-${c.id}` === targetId);
-        const [moved] = categories.splice(dIdx, 1);
-        categories.splice(tIdx, 0, moved);
-        save();
-        render();
+        const fromIdx = categories.findIndex(c => `sec-${c.id}` === draggedId);
+        const toIdx = categories.findIndex(c => `sec-${c.id}` === targetId);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const [moved] = categories.splice(fromIdx, 1);
+        categories.splice(toIdx, 0, moved);
+        save(); render();
     }
 
-    // --- PROGRESS & HELPERS ---
+    // ====================== PROGRESS & MLGS ======================
     function updateProgress() {
         const total = tasks.length;
         const done = tasks.filter(t => t.checked).length;
-        const pct = total ? Math.round((done/total)*100) : 0;
+        const pct = total ? Math.round((done / total) * 100) : 0;
         const bar = document.getElementById('progress-bar');
-        if(bar) { bar.style.width = pct+'%'; bar.innerText = `Daily Goal: ${pct}% (${done}/${total})`; }
+        bar.style.width = pct + '%';
+        bar.innerText = `Daily Goal: ${pct}% (${done}/${total})`;
     }
 
-    function handleMLGS(id) {
+    function handleMLGSClick(id) {
         if (id === 't1') {
-            const next = new Date();
-            next.setHours(next.getHours() + 23);
-            localStorage.setItem('mlgsNextTime', next.getTime());
-            updateMLGSTimer();
+            const next = Date.now() + 23 * 60 * 60 * 1000;
+            localStorage.setItem('mlgs_time', next);
+            updateMLGS();
         }
     }
 
-    function updateMLGSTimer() {
+    function updateMLGS() {
         const el = document.getElementById('mlgs-timer');
         if (!el) return;
-        const next = localStorage.getItem('mlgsNextTime');
+        const next = localStorage.getItem('mlgs_time');
         if (!next) return;
-        const diff = next - new Date().getTime();
+        const diff = parseInt(next) - Date.now();
         if (diff > 0) {
             const d = new Date(parseInt(next));
-            let h = d.getHours();
+            const h = d.getHours();
             const m = d.getMinutes().toString().padStart(2,'0');
-            const p = h >= 12 ? 'PM' : 'AM';
-            el.innerText = `NEXT: ${h%12||12}:${m} ${p}`;
-        } else { el.innerText = "READY!"; }
+            el.innerText = `NEXT MAIL: ${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+        } else {
+            el.innerText = "READY!";
+        }
     }
 
+    // ====================== BACKUP ======================
     function exportBackup() {
-        const blob = new Blob([JSON.stringify({tasks, categories})], {type:"application/json"});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download="Traffic_Hub_v3.json"; a.click();
+        const data = { tasks, categories, folded };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "Traffic_Command_Elite_Full_Backup.json";
+        a.click();
     }
 
     function importBackup(e) {
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            const d = JSON.parse(ev.target.result);
-            if(d.tasks) tasks = d.tasks;
-            if(d.categories) categories = d.categories;
-            save(); render();
+        reader.onload = ev => {
+            try {
+                const d = JSON.parse(ev.target.result);
+                if (d.tasks) tasks = d.tasks;
+                if (d.categories) categories = d.categories;
+                if (d.folded) folded = d.folded;
+                save(); render();
+                alert("✅ Restore successful!");
+            } catch(err) {
+                alert("Invalid backup file");
+            }
         };
         reader.readAsText(e.target.files[0]);
     }
 
-    window.onload = () => { render(); setInterval(updateMLGSTimer, 60000); };
+    // ====================== INIT ======================
+    window.onload = () => {
+        migrateData();
+        const savedCols = localStorage.getItem('pref_cols') || 4;
+        document.getElementById('colSlider').value = savedCols;
+        updateCols(savedCols);
+        render();
+        setInterval(updateMLGS, 60000);
+    };
 </script>
 </body>
 </html>
