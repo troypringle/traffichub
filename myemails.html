@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pro Email Editor - Dropbox Cloud Sync</title>
+  <script src="https://cdn.tiny.cloud/1/ed1qn0rblik03emio7c5mhchq47pdzm2c0o39so0n7d8veyu/tinymce/7/tinymce.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/classy/dropbox.js/10.11.0/Dropbox-sdk.min.js"></script>
+  
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+    .sidebar { width: 280px; background: #2c3e50; color: white; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); overflow-y: auto; }
+    .sidebar h2 { font-size: 18px; text-align: center; border-bottom: 1px solid #34495e; padding-bottom: 10px; margin: 0; }
+    .main-content { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    label { font-size: 11px; color: #bdc3c7; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+    input, select, button { padding: 10px; border: none; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; font-weight: bold; }
+    .btn-save { background-color: #007bff; color: white; }
+    .btn-rename { background-color: #f39c12; color: white; }
+    .btn-delete { background-color: #dc3545; color: white; }
+    .btn-copy { background-color: #28a745; color: white; padding: 15px; margin-top: 10px; }
+    .btn-cloud { background-color: #00d2ff; color: #333; margin-top: auto; }
+    .editor-wrapper { width: 900px; height: 90vh; background: white; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+    #editor { width: 100%; height: 100%; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .unsaved { background: #ff4757; }
+    .saved { background: #2ed573; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Email Editor <span id="saveStatus" class="status-dot saved"></span></h2>
+    
+    <label>Dropbox Access Token</label>
+    <input type="password" id="dbToken" placeholder="Paste Token Here..." onchange="saveToken()">
+
+    <label>Category</label>
+    <select id="categoryDropdown" onchange="checkUnsaved(buildDropdown)">
+      <option value="HBA">HBA Series</option>
+      <option value="MLGS">MLGS Series</option>
+    </select>
+
+    <label>Select Template</label>
+    <select id="templateDropdown" onchange="checkUnsaved(loadTemplate)">
+      <option value="">-- Saved --</option>
+    </select>
+
+    <hr style="width:100%; border:0; border-top:1px solid #34495e;">
+
+    <label>Template Name</label>
+    <input type="text" id="newName" placeholder="Name...">
+    
+    <button class="btn-save" onclick="saveTemplate()">Save / Update</button>
+    <button class="btn-rename" onclick="renameTemplate()">Rename</button>
+    <button class="btn-delete" onclick="deleteTemplate()">Delete</button>
+
+    <button class="btn-copy" onclick="copyHtml()">Copy HTML</button>
+    
+    <button class="btn-cloud" onclick="manualCloudSync()">Force Cloud Sync</button>
+  </div>
+
+  <div class="main-content">
+    <div class="editor-wrapper">
+      <textarea id="editor"></textarea>
+    </div>
+  </div>
+
+  <script>
+    const storageKey = "MULTI_EMAIL_TEMPLATES";
+    const tokenKey = "DB_ACCESS_TOKEN";
+    let isDirty = false;
+
+    // --- DIRTY STATE TRACKING (EXIT REMINDERS) ---
+    function setDirty(state) {
+      isDirty = state;
+      const dot = document.getElementById("saveStatus");
+      dot.className = state ? "status-dot unsaved" : "status-dot saved";
+    }
+
+    window.addEventListener('beforeunload', (event) => {
+      if (isDirty) {
+        event.preventDefault();
+        event.returnValue = 'You have unsaved changes! Are you sure you want to exit?';
+      }
+    });
+
+    function checkUnsaved(callback) {
+      if (isDirty) {
+        if (confirm("You have unsaved changes. Save them now?")) {
+          saveTemplate();
+        } else {
+          setDirty(false);
+        }
+      }
+      callback();
+    }
+
+    // --- DROPBOX API LOGIC ---
+    function saveToken() {
+      localStorage.setItem(tokenKey, document.getElementById("dbToken").value);
+    }
+
+    async function manualCloudSync() {
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return alert("Please enter a Dropbox Access Token in the sidebar first.");
+      
+      const dbx = new Dropbox.Dropbox({ accessToken: token });
+      const data = localStorage.getItem(storageKey);
+      
+      try {
+        await dbx.filesUpload({
+          path: '/email_backups.json',
+          contents: data,
+          mode: 'overwrite'
+        });
+        alert("Cloud Sync Successful: Saved to Dropbox!");
+      } catch (error) {
+        console.error(error);
+        alert("Cloud Sync Failed. Check your token permissions.");
+      }
+    }
+
+    // --- CORE LOGIC ---
+    function getTemplates() {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : { HBA: {}, MLGS: {} };
+    }
+
+    function buildDropdown() {
+      const data = getTemplates();
+      const cat = document.getElementById("categoryDropdown").value;
+      const drop = document.getElementById("templateDropdown");
+      drop.innerHTML = '<option value="">-- Saved --</option>';
+      if (data[cat]) {
+        Object.keys(data[cat]).sort().forEach(n => {
+          let opt = new Option(n, n);
+          drop.add(opt);
+        });
+      }
+    }
+
+    function loadTemplate() {
+      const cat = document.getElementById("categoryDropdown").value;
+      const name = document.getElementById("templateDropdown").value;
+      if (!name) return;
+      const data = getTemplates();
+      tinymce.get("editor").setContent(data[cat][name] || "");
+      document.getElementById("newName").value = name;
+      setDirty(false);
+    }
+
+    function saveTemplate() {
+      const cat = document.getElementById("categoryDropdown").value;
+      const name = document.getElementById("newName").value.trim();
+      if (!name) return alert("Enter a name.");
+      
+      const content = tinymce.get("editor").getContent();
+      const data = getTemplates();
+      data[cat][name] = content;
+      
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      setDirty(false);
+      buildDropdown();
+      document.getElementById("templateDropdown").value = name;
+      
+      // Auto-attempt cloud sync if token exists
+      if(localStorage.getItem(tokenKey)) manualCloudSync();
+    }
+
+    function renameTemplate() {
+      const cat = document.getElementById("categoryDropdown").value;
+      const oldN = document.getElementById("templateDropdown").value;
+      const newN = document.getElementById("newName").value.trim();
+      if (!oldN || !newN || oldN === newN) return;
+      
+      const data = getTemplates();
+      data[cat][newN] = data[cat][oldN];
+      delete data[cat][oldN];
+      
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      buildDropdown();
+      document.getElementById("templateDropdown").value = newN;
+      setDirty(false);
+      if(localStorage.getItem(tokenKey)) manualCloudSync();
+    }
+
+    function deleteTemplate() {
+      const cat = document.getElementById("categoryDropdown").value;
+      const name = document.getElementById("templateDropdown").value;
+      if (!name || !confirm("Delete this?")) return;
+      const data = getTemplates();
+      delete data[cat][name];
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      tinymce.get("editor").setContent("");
+      buildDropdown();
+      setDirty(false);
+    }
+
+    function copyHtml() {
+      const html = tinymce.get("editor").getContent();
+      navigator.clipboard.writeText(html).then(() => alert("Copied!"));
+    }
+
+    tinymce.init({
+      selector: "#editor",
+      plugins: "lists link image table code fullscreen",
+      toolbar: "undo redo | bold italic underline | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image code",
+      height: "100%",
+      branding: false,
+      setup: function(ed) {
+        ed.on('init', () => {
+          buildDropdown();
+          document.getElementById("dbToken").value = localStorage.getItem(tokenKey) || "";
+        });
+        ed.on('Change KeyUp Undo Redo', () => setDirty(true));
+      }
+    });
+  </script>
+</body>
+</html>
